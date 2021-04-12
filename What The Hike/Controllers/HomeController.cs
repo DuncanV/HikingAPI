@@ -7,6 +7,7 @@ using System.Data;
 using System.Configuration;
 using MySqlConnector;
 using Newtonsoft.Json;
+using System.Net.Http;
 
 namespace What_The_Hike.Controllers
 {
@@ -57,8 +58,36 @@ namespace What_The_Hike.Controllers
                     }
                 }
             }
-            this.HttpContext.Response.StatusCode = 200;
+
             return version;
+        }
+
+
+        [HttpGet]
+        public String getTempWeather()
+        {
+            string Ret = string.Empty;
+
+            HttpClient client = new HttpClient();
+            client.BaseAddress = new Uri("https://api.openweathermap.org/");
+            var latitude = -25.8321;
+            var longitiude = 28.2914;
+            var apiKey = "7db484b6881763be58be890766009069";
+            string endpoint = $"data/2.5/onecall?lat={latitude}&lon={longitiude}&units=metric&appid={apiKey}";
+
+            HttpResponseMessage response = client.GetAsync(endpoint).Result;
+            if (response.IsSuccessStatusCode)
+            {
+                Ret = response.Content.ReadAsStringAsync().Result;
+            }
+            else
+            {
+                Console.WriteLine("{0} ({1})", (int)response.StatusCode, response.ReasonPhrase);
+                Ret = "{sucess: false, message: \"WeatherApi call failed\"}";
+            }
+            this.HttpContext.Response.StatusCode = 200;
+            this.HttpContext.Response.ContentType = "application/json; charset=utf-8";
+            return Ret;
         }
     }
 }
