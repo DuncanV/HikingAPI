@@ -5,6 +5,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Data;
 using System.Configuration;
+using System.Net.Http;
 
 namespace What_The_Hike
 {
@@ -86,7 +87,7 @@ namespace What_The_Hike
         }
 
         [HttpGet]
-        public JsonResult getTempWeather()
+        public String getTempWeather()
         {
             string Ret = string.Empty;
 
@@ -108,8 +109,8 @@ namespace What_The_Hike
                 Ret = "{Success: false, message: \"WeatherApi call failed\"}";
             }
             this.HttpContext.Response.StatusCode = 200;
-            // this.HttpContext.Response.ContentType = "application/json; charset=utf-8";
-            return Json(Ret);
+            this.HttpContext.Response.ContentType = "application/json; charset=utf-8";
+            return Ret;
         }
     }
 }
