@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Web.Mvc;
 using What_The_Hike;
-using What_The_Hike.Controllers;
+
 
 namespace What_The_Hike.Tests.Controllers
 {
