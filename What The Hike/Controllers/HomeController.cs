@@ -64,26 +64,27 @@ namespace What_The_Hike
         //}
 
         [HttpPost]
-        public JsonResult pointsOfInterest(string poiName, int hikeID)
+        public JsonResult PointsOfInterest(string poiName = null, int hikeID = 0)
         {
-            List<PointOfInterest> poi = new List<PointOfInterest>();
+            List<PointOfInterestView> poi = new List<PointOfInterestView>();
             using (HikeContext db = new HikeContext())
             {
-                if (poiName != "")
+                if (poiName != null)
                 {
-                    poi.AddRange(db.PointOfInterest.Where(e => e.pointOfInterestID == 2).ToList());
+                    var points = db.PointOfInterest.Where(e => e.pointOfInterestID == hikeID).ToList();
+                    foreach (var item in points)
+                        poi.Add(new PointOfInterestView { poiID = item.pointOfInterestID, PointOfInterestDescription = item.description });
                 }
                 if (hikeID > 0)
                 {
                     var poiIDs = db.HikeInterestLink.Where(e => e.hikeID == hikeID).Select(e => e.pointOfInterestID).ToList();
-                    poi.AddRange(db.PointOfInterest.Where(e => poiIDs.Contains(e.pointOfInterestID)).ToList());
-                }
-                if (poi.Count > 0)
-                {
-                    poi = poi.Distinct().OrderBy(i => i.pointOfInterestID).ToList();
+                    var points = db.PointOfInterest.Where(e => poiIDs.Contains(e.pointOfInterestID)).ToList();
+                    foreach (var item in points)
+                        if (poi.Where(e => e.poiID == item.pointOfInterestID).FirstOrDefault() == null)
+                            poi.Add(new PointOfInterestView { poiID = item.pointOfInterestID, PointOfInterestDescription = item.description });
                 }
             }
-            return Json(poi);
+            return Json(poi.OrderBy(e=>e.poiID).ToList());
         }
 
         [HttpGet]
