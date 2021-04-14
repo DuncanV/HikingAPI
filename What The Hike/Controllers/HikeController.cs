@@ -64,7 +64,6 @@ namespace What_The_Hike
                 }
             }
 
-            
             this.HttpContext.Response.StatusCode = 200;
             this.HttpContext.Response.ContentType = "application/json; charset=utf-8";
             return Ret;
