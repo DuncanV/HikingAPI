@@ -13,6 +13,11 @@ namespace What_The_Hike
         [HttpGet]
         public String Index()
         {
+            List<Hike> hikes = new List<Hike>();
+            using (HikeContext db = new HikeContext())
+            {
+                hikes.AddRange(db.Hike.ToList());
+            }
             string Ret = string.Empty;
             Ret = "{\"Success\": false, \"message\": \"WeatherApi call failed\"}";
             this.HttpContext.Response.StatusCode = 200;
