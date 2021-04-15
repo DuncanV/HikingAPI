@@ -10,9 +10,14 @@ namespace What_The_Hike
     public class HikeController : Controller
     {
         // GET: Hike
-        public ActionResult Index()
+        [HttpGet]
+        public String Index()
         {
-            return View();
+            string Ret = string.Empty;
+            Ret = "{\"Success\": false, \"message\": \"WeatherApi call failed\"}";
+            this.HttpContext.Response.StatusCode = 200;
+            this.HttpContext.Response.ContentType = "application/json; charset=utf-8";
+            return Ret;
         }
 
 
