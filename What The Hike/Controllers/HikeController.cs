@@ -11,24 +11,125 @@ namespace What_The_Hike
     {
         // GET: Hike
         [HttpGet]
-        public String Index()
+        public JsonResult Index()
         {
-            List<Hike> hikes = new List<Hike>();
+            List<HikeGeneralView> hikes = new List<HikeGeneralView>();
             using (HikeContext db = new HikeContext())
             {
-                hikes.AddRange(db.Hike.ToList());
+                var hikesDB = db.Hike.ToList();
+                foreach (var item in hikesDB)
+                {
+                    Difficulty difficulty = db.Difficulty.Where(e => e.difficultyID == item.difficultyID).FirstOrDefault();
+                    Facility facility = db.Facility.Where(e => e.facilityID == item.facilityID).FirstOrDefault();
+                    Duration duration = db.Duration.Where(e => e.durationID == item.avgDuration).FirstOrDefault();
+                    hikes.Add(new HikeGeneralView
+                    {
+                        hikeID = item.hikeID,
+                        name = item.name,
+                        map = item.map,
+                        description = item.description,
+                        coordinates = item.coordinates,
+                        distance = item.distance,
+                        enteranceFee = item.enteranceFee,
+                        maxGroupSize = item.maxGroupSize,
+                        difficulty = difficulty.description,
+                        duration = duration.time,
+                        facilityId = facility.facilityID,
+                        facilityName = facility.name,
+                    }
+                    );
+                }
             }
-            string Ret = string.Empty;
-            Ret = "{\"Success\": false, \"message\": \"WeatherApi call failed\"}";
             this.HttpContext.Response.StatusCode = 200;
             this.HttpContext.Response.ContentType = "application/json; charset=utf-8";
-            return Ret;
+            if (hikes.Count > 0)
+            {
+                return Json(hikes.OrderBy(e => e.hikeID).ToList(), JsonRequestBehavior.AllowGet);
+            }
+            else
+            {
+                string Ret = string.Empty;
+                Ret = "{\"Success\": false, \"message\": \"No Hikes available\"}";
+                return Json(Ret, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        // GET: Hike/getHike/{id}
+        [HttpGet]
+        public JsonResult Index(int id)
+        {
+            HikeDetailView hike = null;
+
+            using (HikeContext db = new HikeContext())
+            {
+                Hike hikeDB = db.Hike.Where(e => e.hikeID == id).FirstOrDefault();
+                if (hikeDB != null)
+                {
+                    Difficulty difficultyDB = db.Difficulty.Where(e => e.difficultyID == hikeDB.difficultyID).FirstOrDefault();
+                    Facility facilityDB = db.Facility.Where(e => e.facilityID == hikeDB.facilityID).FirstOrDefault();
+                    Duration durationDB = db.Duration.Where(e => e.durationID == hikeDB.avgDuration).FirstOrDefault();
+
+                    FacilityView facility = new FacilityView
+                    {
+                        facilityID = facilityDB.facilityID,
+                        name = facilityDB.name,
+                        latitude = facilityDB.latitude,
+                        longitude = facilityDB.longitude,
+                        parking = facilityDB.parking,
+                        pets = facilityDB.pets,
+                        bookingRequired = facilityDB.bookingRequired,
+                        HikesInFacility = getHikesByFacilityId(facilityDB.facilityID)
+                    };
+
+                    hike = new HikeDetailView
+                    {
+                        hikeID = hikeDB.hikeID,
+                        name = hikeDB.name,
+                        map = hikeDB.map,
+                        description = hikeDB.description,
+                        coordinates = hikeDB.coordinates,
+                        distance = hikeDB.distance,
+                        enteranceFee = hikeDB.enteranceFee,
+                        maxGroupSize = hikeDB.maxGroupSize,
+                        difficulty = difficultyDB.description,
+                        duration = durationDB.time,
+                        facility = facility
+                    };
+                }
+            }
+            this.HttpContext.Response.StatusCode = 200;
+            this.HttpContext.Response.ContentType = "application/json; charset=utf-8";
+            if (hike != null)
+            {
+                return Json(hike, JsonRequestBehavior.AllowGet);
+            }
+            else
+            {
+                string Ret = string.Empty;
+                Ret = "{\"Success\": false, \"message\": \"Invalid Hike ID\"}";
+                return Json(Ret, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        public List<HikeSimpleView> getHikesByFacilityId(int facilityId)
+        {
+            List<HikeSimpleView> hikes = new List<HikeSimpleView>();
+            using (HikeContext db = new HikeContext())
+            {
+                var hikesDB = db.Hike.Where(e => e.facilityID == facilityId).ToList();
+                foreach (var item in hikesDB)
+                {
+                    hikes.Add(new HikeSimpleView { hikeID = item.hikeID, name = item.name });
+                }
+            }
+
+            return hikes;
         }
 
 
         // GET: Hike/weather/{id}
         [HttpGet]
-        public String weather(int id)
+        public JsonResult weather(int id)
         {
             Hike hike = null;
             Facility facility = null;
@@ -76,7 +177,7 @@ namespace What_The_Hike
 
             this.HttpContext.Response.StatusCode = 200;
             this.HttpContext.Response.ContentType = "application/json; charset=utf-8";
-            return Ret;
+            return Json(Ret, JsonRequestBehavior.AllowGet);
         }
     }
 }
