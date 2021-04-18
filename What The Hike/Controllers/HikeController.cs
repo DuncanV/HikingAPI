@@ -56,7 +56,7 @@ namespace What_The_Hike
 
         // GET: Hike/getHike/{id}
         [HttpGet]
-        public JsonResult Index(int id)
+        public JsonResult GetHike(int id)
         {
             HikeDetailView hike = null;
 
@@ -93,7 +93,8 @@ namespace What_The_Hike
                         maxGroupSize = hikeDB.maxGroupSize,
                         difficulty = difficultyDB.description,
                         duration = durationDB.time,
-                        facility = facility
+                        facility = facility,
+                        pointsOfInterest = PointsOfInterest(hikeDB.hikeID)
                     };
                 }
             }
@@ -109,6 +110,20 @@ namespace What_The_Hike
                 Ret = "{\"Success\": false, \"message\": \"Invalid Hike ID\"}";
                 return Json(Ret, JsonRequestBehavior.AllowGet);
             }
+        }
+
+        private List<PointOfInterestView> PointsOfInterest(int hikeID)
+        {
+            List<PointOfInterestView> poi = new List<PointOfInterestView>();
+            using (HikeContext db = new HikeContext())
+            {
+                var poiIDs = db.HikeInterestLink.Where(e => e.hikeID == hikeID).Select(e => e.pointOfInterestID).ToList();
+                var points = db.PointOfInterest.Where(e => poiIDs.Contains(e.pointOfInterestID)).ToList();
+                foreach (var item in points)
+                    if (poi.Where(e => e.poiID == item.pointOfInterestID).FirstOrDefault() == null)
+                        poi.Add(new PointOfInterestView { poiID = item.pointOfInterestID, PointOfInterestDescription = item.description });
+            }
+            return poi;
         }
 
         public List<HikeSimpleView> getHikesByFacilityId(int facilityId)
@@ -129,7 +144,7 @@ namespace What_The_Hike
 
         // GET: Hike/weather/{id}
         [HttpGet]
-        public JsonResult weather(int id)
+        public String Weather(int id)
         {
             Hike hike = null;
             Facility facility = null;
@@ -177,7 +192,8 @@ namespace What_The_Hike
 
             this.HttpContext.Response.StatusCode = 200;
             this.HttpContext.Response.ContentType = "application/json; charset=utf-8";
-            return Json(Ret, JsonRequestBehavior.AllowGet);
+            return Ret;
+            //return Json(Ret, JsonRequestBehavior.AllowGet);
         }
     }
 }

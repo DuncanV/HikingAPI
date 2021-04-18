@@ -73,6 +73,8 @@ namespace What_The_Hike
 
         public FacilityView facility { get; set; }
 
+        public List<PointOfInterestView> pointsOfInterest { get; set; }
+
     }
 
     public class FacilityView
