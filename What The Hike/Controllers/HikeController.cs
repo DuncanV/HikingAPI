@@ -78,5 +78,15 @@ namespace What_The_Hike
             this.HttpContext.Response.ContentType = "application/json; charset=utf-8";
             return Ret;
         }
+
+        /**
+         * POST: Hike/LeaderBoard/{id}
+         */
+        /*[HttpPost]
+        public string LeaderBoard(int id)
+        {
+
+        }*/
+
     }
 }
