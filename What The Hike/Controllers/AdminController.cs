@@ -27,12 +27,46 @@ namespace What_The_Hike.Controllers
 
         }*/
 
-        // POST: /Adming/LoadFacilityHours/{id}
-        /*[HttpPost]
-        public string LoadFaciltyHours(int id)
+        // POST: /Admin/LoadFacilityHours/
+        [HttpPost]
+        public string LoadFacilityHours(int FacilityId, int OperatingHoursId)
         {
+            FacilityHoursLink FacilityHours = new FacilityHoursLink { facilityID = FacilityId, operatingHoursID = OperatingHoursId };
 
-        }*/
+            using (HikeContext db = new HikeContext())
+            {
+
+                var Hours = db.FacilityHoursLink
+                    .Where(h => (h.facilityID == FacilityId) && (h.operatingHoursID == OperatingHoursId))
+                    .FirstOrDefault();
+
+                if (Hours != null)
+                {
+                    return "FacilityHoursLink could not be added because it already exists ";
+                }
+
+                var Facility = db.Facility
+                    .Where(f => f.facilityID == FacilityId)
+                    .FirstOrDefault();
+
+                var OpHours = db.OperatingHours
+                    .Where(o => o.operatingHoursID == OperatingHoursId)
+                    .FirstOrDefault();
+
+                if (Facility == null)
+                {
+                    return "FacilityHoursLink could not be added because there is no facility with id " + FacilityId;
+                } else if (OpHours == null)
+                {
+                    return "FacilityHoursLink could not added because there is no OperatingHours with id " + OperatingHoursId;
+                }
+
+                db.FacilityHoursLink.Add(FacilityHours);
+                db.SaveChanges();
+            }
+
+            return "Added Facility Hours Link: FacilityId: " + FacilityId + " OperatingHoursId: " + OperatingHoursId; 
+        }
 
         // POST: /Admin/LoadOperatingHours
         [HttpPost]
@@ -45,7 +79,7 @@ namespace What_The_Hike.Controllers
 
                 var OpHours = db.OperatingHours
                     .Where(o => (o.time_from == TimeFrom) && (o.time_to == TimeTo) && (o.day == Day))
-                    .ToList();
+                    .FirstOrDefault();
 
                 if (OpHours != null)
                 {
