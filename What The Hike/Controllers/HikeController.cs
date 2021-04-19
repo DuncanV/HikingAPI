@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Newtonsoft.Json.Serialization;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Script.Serialization;
 
 namespace What_The_Hike
 {
@@ -82,11 +84,51 @@ namespace What_The_Hike
         /**
          * POST: Hike/LeaderBoard/{id}
          */
-        /*[HttpPost]
-        public string LeaderBoard(int id)
+        [HttpPost]
+        public SortedDictionary<int, double> LeaderBoard(int id)
         {
+            List<User> Users;
+            List<HikeLog> UsersHikeLogs;
+            //List<Tuple<int, double>> UserScore = new List<Tuple<int, double>>();
+            SortedDictionary<int, double> UserScore = new SortedDictionary<int, double>(Comparer<int>.Create((x, y) => y.CompareTo(x)));
 
-        }*/
+            using (HikeContext db = new HikeContext())
+            {
+                Users = db.User
+                    .ToList();
+
+                UsersHikeLogs = db.HikeLog
+                    .ToList();
+
+                foreach (User u in Users)
+                {
+                    List<HikeLog> Log = UsersHikeLogs
+                    .Where(l => l.userID == u.userID)
+                    .ToList();
+
+                    double sum = 0.0;
+
+                    foreach(HikeLog hikeLog in Log)
+                    {
+                        Hike hike = db.Hike
+                            .Where(h => h.hikeID == hikeLog.hikeID)
+                            .FirstOrDefault();
+
+                        sum += hike.distance;
+                    }
+
+                    //Tuple<int, double> UserDistance = new Tuple<int, double>(u.userID, sum);
+                    // UserScore.Add(UserDistance);
+                    UserScore.Add(u.userID, sum);
+                }
+
+               // UserScore.Sort((a, b) => a.Item2.CompareTo(b.Item2));
+                Console.WriteLine(UserScore);
+
+                return UserScore;
+               // list.Sort((a, b) => a.Item2.CompareTo(b.Item2)); //sort based on the string element
+            }
+        }
 
     }
 }

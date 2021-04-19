@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Script.Serialization;
 
 namespace What_The_Hike.Controllers
 {
@@ -15,17 +16,25 @@ namespace What_The_Hike.Controllers
         }
 
         // GET: /Admin/GetLocation/{id}
-        /*[HttpGet]
-        public String GetLocation(int id)
+        [HttpGet]
+        public string GetLocation(int id)
         {
-            Facility facility;
+            Facility Fac;
 
             using(HikeContext db = new HikeContext())
             {
-                
+                var TempFac = db.Facility.Find(id);
+
+                if (TempFac != null)
+                {
+                    return new JavaScriptSerializer().Serialize(TempFac); ;
+                } else
+                {
+                    return "{\"Success\": false, \"message\": \"Facility does not exist\"}";
+                }
             }
 
-        }*/
+        }
 
         // POST: /Admin/LoadFacilityHours/
         [HttpPost]
@@ -42,7 +51,7 @@ namespace What_The_Hike.Controllers
 
                 if (Hours != null)
                 {
-                    return "FacilityHoursLink could not be added because it already exists ";
+                    return "{\"Success\": false, \"message\": \"Facility Hours already exists\"}";
                 }
 
                 var Facility = db.Facility
@@ -55,17 +64,17 @@ namespace What_The_Hike.Controllers
 
                 if (Facility == null)
                 {
-                    return "FacilityHoursLink could not be added because there is no facility with id " + FacilityId;
+                    return "{\"Success\": false, \"message\": \"Could not add FacilityHoursLink because Facility id does not exist\"}";
                 } else if (OpHours == null)
                 {
-                    return "FacilityHoursLink could not added because there is no OperatingHours with id " + OperatingHoursId;
+                    return "{\"Success\": false, \"message\": \"Could not add FacilityHoursLink because Operating Hours id does not exist\"}";
                 }
 
                 db.FacilityHoursLink.Add(FacilityHours);
                 db.SaveChanges();
             }
 
-            return "Added Facility Hours Link: FacilityId: " + FacilityId + " OperatingHoursId: " + OperatingHoursId; 
+            return "{\"Success\": true, \"message\": \"Added Facility Hours\"}"; 
         }
 
         // POST: /Admin/LoadOperatingHours
@@ -83,37 +92,71 @@ namespace What_The_Hike.Controllers
 
                 if (OpHours != null)
                 {
-                    return "Operating hours could not be loaded because it already exists";
+                    return "{\"Success\": false, \"message\": \"Operating hours already exists\"}";
                 }
 
                 db.OperatingHours.Add(hours);
                 db.SaveChanges();
             }
 
-            return "Added Operation Hours => TimeFrom: " + TimeFrom + " TimeTo: " + TimeTo + " Day: " + Day ;
+            return "{\"Success\": true, \"message\": \"Added Operating Hours\"}";
         }
 
         // POST: /Admin/LoadLocation
-       /* [HttpPost]
-        public String LoadLocation(string Name, float Longitude, float Latitude, bool Parking, bool Pets, bool BookingRequired, int FacilityHoursLink)
+        [HttpPost]
+        public String LoadLocation(string Name, float Longitude, float Latitude, bool Parking, bool Pets, bool BookingRequired)
         {
-            Facility facility;
+            Facility Fac = new Facility { name = Name, longitude = Longitude, latitude = Latitude, parking = Parking, pets = Pets, bookingRequired = BookingRequired };
 
             using (HikeContext db = new HikeContext())
             {
+                var TempFacility = db.Facility
+                    .Where(f => (f.name == Name) && (f.longitude == Longitude) && (f.latitude == Latitude) && (f.parking == Parking) && (f.pets == Pets) && (f.bookingRequired == BookingRequired))
+                    .FirstOrDefault();
 
+                if (TempFacility != null)
+                {
+                   return "{\"Success\": false, \"message\": \"Facility already exists\"}";
+                }
+
+                db.Facility.Add(Fac);
+                db.SaveChanges();
+
+                return "{\"Success\": true, \"message\": \"Facility added\"}";
             }
-        }*/
+        }
 
         // PATCH: /Admin/UpdateLocation/{id}
-        /*[HttpPatch]
-        public String UpdateLocation(int id)
+        [HttpPatch]
+        public String UpdateLocation(int id, string Name, float Longitude, float Latitude, bool Parking, bool Pets, bool BookingRequired)
         {
 
-        }*/
+            Facility Fac = new Facility { facilityID = id, name = Name, longitude = Longitude, latitude = Latitude, parking = Parking, pets = Pets, bookingRequired = BookingRequired };
+
+            using (HikeContext db = new HikeContext())
+            {
+                var TempFacility = db.Facility.Find(id);
+
+                if (TempFacility == null)
+                {
+                    return "{\"Success\": false, \"message\": \"Facility does not exist\"}";
+                }
+
+                TempFacility.name = Name;
+                TempFacility.longitude = Longitude;
+                TempFacility.latitude = Latitude;
+                TempFacility.parking = Parking;
+                TempFacility.pets = Pets;
+                TempFacility.bookingRequired = BookingRequired;
+                db.Entry(TempFacility).State = System.Data.Entity.EntityState.Modified;
+                db.SaveChanges();
+
+                return "{\"Success\": true, \"message\": \"Facility updated\"}";
+            }
+        }
 
         // DELETE: /Admin/RemoveLocation/{id}
-       /* [HttpDelete]
+        /*[HttpDelete]
         public String RemoveLocation()
         {
 
