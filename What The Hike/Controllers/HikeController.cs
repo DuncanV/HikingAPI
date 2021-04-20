@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Serialization;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -82,15 +82,15 @@ namespace What_The_Hike
         }
 
         /**
-         * POST: Hike/LeaderBoard/{id}
+         * GET: Hike/LeaderBoard/
          */
-        [HttpPost]
-        public SortedDictionary<int, double> LeaderBoard(int id)
+        [HttpGet]
+        public string LeaderBoard()
         {
             List<User> Users;
             List<HikeLog> UsersHikeLogs;
-            //List<Tuple<int, double>> UserScore = new List<Tuple<int, double>>();
-            SortedDictionary<int, double> UserScore = new SortedDictionary<int, double>(Comparer<int>.Create((x, y) => y.CompareTo(x)));
+
+            Dictionary<int, double> UserScore = new Dictionary<int, double>();
 
             using (HikeContext db = new HikeContext())
             {
@@ -117,16 +117,18 @@ namespace What_The_Hike
                         sum += hike.distance;
                     }
 
-                    //Tuple<int, double> UserDistance = new Tuple<int, double>(u.userID, sum);
-                    // UserScore.Add(UserDistance);
                     UserScore.Add(u.userID, sum);
                 }
 
-               // UserScore.Sort((a, b) => a.Item2.CompareTo(b.Item2));
-                Console.WriteLine(UserScore);
+                var items = from pair in UserScore
+                            orderby pair.Value descending,
+                                    pair.Key
+                            select pair;
 
-                return UserScore;
-               // list.Sort((a, b) => a.Item2.CompareTo(b.Item2)); //sort based on the string element
+                var json = JsonConvert.SerializeObject(items, Formatting.Indented);
+
+                return json;
+               
             }
         }
 

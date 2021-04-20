@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -20,14 +21,49 @@ namespace What_The_Hike.Controllers
         public string GetLocation(int id)
         {
             Facility Fac;
+            FinalFacility final;
 
             using(HikeContext db = new HikeContext())
             {
-                var TempFac = db.Facility.Find(id);
+                Facility TempFac = db.Facility
+                    .Find(id);
+
+                var Link = db.FacilityHoursLink
+                    .Where(f => f.facilityID == id)
+                    .ToList();
+
+                List<OperatingHours> OpHours = new List<OperatingHours>();
+                Dictionary<string, string> dict = new Dictionary<string, string>();
+                foreach(FacilityHoursLink link in Link)
+                {
+                    var Hours = db.OperatingHours
+                        .Where(o => o.operatingHoursID == link.operatingHoursID)
+                        .First();
+                    OperatingHours TempHours = new OperatingHours { operatingHoursID = link.operatingHoursID, time_from = Hours.time_from, time_to = Hours.time_to, day = Hours.day };
+                    dict.Add(Hours.day.ToString(), Hours.time_from + " - " + Hours.time_to);
+                    OpHours.Add(TempHours);
+                }
+
+                final = new FinalFacility
+                {
+                    name = TempFac.name,
+                    latitude = TempFac.latitude,
+                    longitude = TempFac.longitude,
+                    pets = TempFac.pets,
+                    parking = TempFac.parking,
+                    bookingRequired = TempFac.bookingRequired,
+                    MondayOpHours = dict["1"],
+                    TuesdayOpHours = dict["2"],
+                    WednesdayOpHours = dict["3"],
+                    ThursdayOpHours = dict["4"],
+                    FridayOpHours = dict["5"],
+                    SaturdayOpHours = dict["6"],
+                    SundayOpHours = dict["7"]
+                };
 
                 if (TempFac != null)
                 {
-                    return new JavaScriptSerializer().Serialize(TempFac); ;
+                    return JsonConvert.SerializeObject(final, Formatting.Indented);
                 } else
                 {
                     return "{\"Success\": false, \"message\": \"Facility does not exist\"}";
@@ -156,10 +192,23 @@ namespace What_The_Hike.Controllers
         }
 
         // DELETE: /Admin/RemoveLocation/{id}
-        /*[HttpDelete]
-        public String RemoveLocation()
+        [HttpDelete]
+        public String RemoveLocation(int id)
         {
+            using (HikeContext db = new HikeContext())
+            {
+                Facility facility = db.Facility.Find(id);
 
-        }*/
+                if (facility == null)
+                {
+                    return "{\"Success\": false, \"message\": \"Facility could not be found\"}";
+                } else
+                {
+                    db.Facility.Remove(facility);
+                    db.SaveChanges();
+                    return "{\"Success\": true, \"message\": \"Facility deleted\"}";
+                }
+            }
+        }
     }
 }
