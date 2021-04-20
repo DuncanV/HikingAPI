@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -11,6 +12,7 @@ using System.Web.Http.Results;
 using System.Web.Mvc;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Logging;
+using System.Web.Script.Serialization;
 
 namespace What_The_Hike
 {
@@ -85,7 +87,7 @@ namespace What_The_Hike
             this.HttpContext.Response.ContentType = "application/json; charset=utf-8";
             return Ret;
         }
-        
+       
         //Get: Hike/logs
         public string GetAllHikeLogs()
         {
@@ -166,5 +168,55 @@ namespace What_The_Hike
             }
         }
         
+        /**
+         * GET: Hike/LeaderBoard/
+         */
+        [HttpGet]
+        public string LeaderBoard()
+        {
+            List<User> Users;
+            List<HikeLog> UsersHikeLogs;
+
+            Dictionary<int, double> UserScore = new Dictionary<int, double>();
+
+            using (HikeContext db = new HikeContext())
+            {
+                Users = db.User
+                    .ToList();
+
+                UsersHikeLogs = db.HikeLog
+                    .ToList();
+
+                foreach (User u in Users)
+                {
+                    List<HikeLog> Log = UsersHikeLogs
+                    .Where(l => l.userID == u.userID)
+                    .ToList();
+
+                    double sum = 0.0;
+
+                    foreach(HikeLog hikeLog in Log)
+                    {
+                        Hike hike = db.Hike
+                            .Where(h => h.hikeID == hikeLog.hikeID)
+                            .FirstOrDefault();
+
+                        sum += hike.distance;
+                    }
+
+                    UserScore.Add(u.userID, sum);
+                }
+
+                var items = from pair in UserScore
+                            orderby pair.Value descending,
+                                    pair.Key
+                            select pair;
+
+                var json = JsonConvert.SerializeObject(items, Formatting.Indented);
+
+                return json;
+               
+            }
+        }
     }
 }
