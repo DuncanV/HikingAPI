@@ -11,25 +11,6 @@ namespace What_The_Hike
 {
     public class HomeController : Controller
     {
-        public ActionResult Index()
-        {
-            return View();
-        }
-
-        public ActionResult About()
-        {
-            ViewBag.Message = "Your application description page.";
-
-            return View();
-        }
-
-        public ActionResult Contact()
-        {
-            ViewBag.Message = "Your contact page.";
-
-            return View();
-        }
-
         //! Stuart To Fix
         //[HttpPost]
         //public JsonResult GetAllHikesLogged()
@@ -84,34 +65,7 @@ namespace What_The_Hike
                             poi.Add(new PointOfInterestView { poiID = item.pointOfInterestID, PointOfInterestDescription = item.description });
                 }
             }
-            return Json(poi.OrderBy(e=>e.poiID).ToList());
-        }
-
-        [HttpGet]
-        public String getTempWeather()
-        {
-            string Ret = string.Empty;
-
-            HttpClient client = new HttpClient();
-            client.BaseAddress = new Uri("https://api.openweathermap.org/");
-            var latitude = -25.8321;
-            var longitude = 28.2914;
-            var apiKey = "7db484b6881763be58be890766009069";
-            string endpoint = $"data/2.5/onecall?lat={latitude}&lon={longitude}&units=metric&appid={apiKey}";
-
-            HttpResponseMessage response = client.GetAsync(endpoint).Result;
-            if (response.IsSuccessStatusCode)
-            {
-                Ret = response.Content.ReadAsStringAsync().Result;
-            }
-            else
-            {
-                Console.WriteLine("{0} ({1})", (int)response.StatusCode, response.ReasonPhrase);
-                Ret = "{Success: false, message: \"WeatherApi call failed\"}";
-            }
-            this.HttpContext.Response.StatusCode = 200;
-            this.HttpContext.Response.ContentType = "application/json; charset=utf-8";
-            return Ret;
+            return Json(poi.OrderBy(e => e.poiID).ToList());
         }
     }
 }
