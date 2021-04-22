@@ -1,18 +1,9 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
-using System.Web;
-//using System.Web.Http;
-using System.Web.Http.Results;
 using System.Web.Mvc;
-using Microsoft.EntityFrameworkCore.Internal;
-using Microsoft.Extensions.Logging;
-using System.Web.Script.Serialization;
 
 namespace What_The_Hike
 {
@@ -206,9 +197,10 @@ namespace What_The_Hike
             //return Json(Ret, JsonRequestBehavior.AllowGet);
         }
 
-        //Get: Hike/logs
+        //Get: Hike/logs 
+        //Check reply -> make json and create view model.
         [HttpGet]
-        public string GetAllHikeLogs()
+        public JsonResult GetAllHikeLogs()
         {
             List<HikeLog> hikeLogs;
             using (HikeContext db = new HikeContext())
@@ -221,13 +213,14 @@ namespace What_The_Hike
                         log.User = db.User.Find(log.userID);
                         log.Hike = db.Hike.Find(log.hikeID);
                     }
-                    return "{\"Success\": True, \"message\": \"Hike Logs returned\"}" + hikeLogs;
+                    return Json("{\"Success\": True, \"message\": \"Hike Logs returned\"}" + hikeLogs, JsonRequestBehavior.AllowGet);
                 }
 
-                return "{\"Success\": false, \"message\": \"No Hike Log with the given ID\"}";
+                return Json("{\"Success\": false, \"message\": \"No Hike Log with the given ID\"}", JsonRequestBehavior.AllowGet);
             }
         }
         //Get: Hike/logs/{id}
+        // As above
         [HttpGet]
         public IEnumerable<string> GetLogDetails(int? id)
         {
