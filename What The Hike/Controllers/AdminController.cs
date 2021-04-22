@@ -1,12 +1,9 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
-using System.Web.Script.Serialization;
 
-namespace What_The_Hike.Controllers
+namespace What_The_Hike
 {
     public class AdminController : Controller
     {
@@ -18,12 +15,11 @@ namespace What_The_Hike.Controllers
 
         // GET: /Admin/GetLocation/{id}
         [HttpGet]
-        public string GetLocation(int id)
+        public JsonResult GetLocation(int id)
         {
-            Facility Fac;
             FinalFacility final;
 
-            using(HikeContext db = new HikeContext())
+            using (HikeContext db = new HikeContext())
             {
                 Facility TempFac = db.Facility
                     .Find(id);
@@ -34,7 +30,7 @@ namespace What_The_Hike.Controllers
 
                 List<OperatingHours> OpHours = new List<OperatingHours>();
                 Dictionary<string, string> dict = new Dictionary<string, string>();
-                foreach(FacilityHoursLink link in Link)
+                foreach (FacilityHoursLink link in Link)
                 {
                     var Hours = db.OperatingHours
                         .Where(o => o.operatingHoursID == link.operatingHoursID)
@@ -63,10 +59,13 @@ namespace What_The_Hike.Controllers
 
                 if (TempFac != null)
                 {
-                    return JsonConvert.SerializeObject(final, Formatting.Indented);
-                } else
+                    return Json(final, JsonRequestBehavior.AllowGet);
+                    //return JsonConvert.SerializeObject(final, Formatting.Indented);
+                }
+                else
                 {
-                    return "{\"Success\": false, \"message\": \"Facility does not exist\"}";
+                    return null;
+                    //return "{\"Success\": false, \"message\": \"Facility does not exist\"}";
                 }
             }
 
@@ -101,7 +100,8 @@ namespace What_The_Hike.Controllers
                 if (Facility == null)
                 {
                     return "{\"Success\": false, \"message\": \"Could not add FacilityHoursLink because Facility id does not exist\"}";
-                } else if (OpHours == null)
+                }
+                else if (OpHours == null)
                 {
                     return "{\"Success\": false, \"message\": \"Could not add FacilityHoursLink because Operating Hours id does not exist\"}";
                 }
@@ -110,7 +110,7 @@ namespace What_The_Hike.Controllers
                 db.SaveChanges();
             }
 
-            return "{\"Success\": true, \"message\": \"Added Facility Hours\"}"; 
+            return "{\"Success\": true, \"message\": \"Added Facility Hours\"}";
         }
 
         // POST: /Admin/LoadOperatingHours
@@ -152,7 +152,7 @@ namespace What_The_Hike.Controllers
 
                 if (TempFacility != null)
                 {
-                   return "{\"Success\": false, \"message\": \"Facility already exists\"}";
+                    return "{\"Success\": false, \"message\": \"Facility already exists\"}";
                 }
 
                 db.Facility.Add(Fac);
@@ -202,7 +202,8 @@ namespace What_The_Hike.Controllers
                 if (facility == null)
                 {
                     return "{\"Success\": false, \"message\": \"Facility could not be found\"}";
-                } else
+                }
+                else
                 {
                     db.Facility.Remove(facility);
                     db.SaveChanges();

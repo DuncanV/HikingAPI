@@ -308,7 +308,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Migrations\202104120818432_Initial.cs" />
-    <Compile Include="Migrations\202104120818432_Initial.designer.cs">
+    <Compile Include="Migrations\202104120818432_Initial.Designer.cs">
       <DependentUpon>202104120818432_Initial.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
@@ -368,11 +368,6 @@
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Migrations\202104120818432_Initial.resx">
-      <DependentUpon>202104120818432_Initial.cs</DependentUpon>
-    </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
