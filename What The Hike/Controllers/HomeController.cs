@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
 using System.Data;
-using System.Configuration;
-using System.Net.Http;
 
 namespace What_The_Hike
 {
