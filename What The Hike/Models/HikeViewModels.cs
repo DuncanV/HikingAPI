@@ -97,7 +97,7 @@ namespace What_The_Hike
 
         public List<HikeSimpleView> HikesInFacility { get; set; }
     }
-  
+    
     public class FinalFacility
     {
         public string name { get; set; }
