@@ -224,6 +224,7 @@ namespace What_The_Hike
         public async Task<JsonResult> GetAllHikeLogsAsync()
         {
             List<string> hikes = new List<string>();
+
             using (HikeContext db = new HikeContext())
             {
                 var hikeLogs = await db.HikeLog.Where(e => e.hikeID == e.Hike.hikeID).ToListAsync();
@@ -247,32 +248,47 @@ namespace What_The_Hike
                 return Json(HttpStatusCode.BadRequest);
             }
         }
+
+
         //Get: Hike/logs/{id}
         // As above
         [HttpGet]
         public async Task<JsonResult> GetLogDetailsAsync(int? id)
         {
             List<string> details = new List<string>();
-             
+            HikeFromLog hike = null;
+            var json = new ReturnObject { };
+
             using (HikeContext db = new HikeContext())
             {
                 var hikeLogs = await db.HikeLog.SingleOrDefaultAsync(e => e.hikeLogID == id);
                 if (hikeLogs != null)
                 {
-                    details.Add(hikeLogs.Hike.name);
-                    details.Add(hikeLogs.Hike.description);
-                    details.Add(hikeLogs.Hike.Difficulty.description);
-                    details.Add(hikeLogs.Hike.distance.ToString());
-                    details.Add(hikeLogs.Hike.Facility.name);
-                    details.Add(hikeLogs.Hike.Duration.time.ToString());
-                }
+                    hike = new HikeFromLog
+                    {
+                        name = hikeLogs.Hike.name,
+                        description = hikeLogs.Hike.description,
+                        difficulty = hikeLogs.Hike.Difficulty.description,
+                        distance = hikeLogs.Hike.distance.ToString(),
+                        facility = hikeLogs.Hike.Facility.name,
+                        duration = hikeLogs.Hike.Duration.time.ToString()
+                    };
 
-                var json = new ReturnObject
+                    json = new ReturnObject
+                    {
+                        success = true,
+                        message = "Hike retrieved",
+                        data = hike
+                    };
+                } else
                 {
-                    success = true,
-                    message = "Hike Log retrieved",
-                    data = details
-                };
+                    json = new ReturnObject
+                    {
+                        success = false,
+                        message = "Hike does not exist",
+                        data = hike
+                    };
+                }
 
                 return Json(json, JsonRequestBehavior.AllowGet);
             }
@@ -282,23 +298,39 @@ namespace What_The_Hike
         //POST: Hike/logs
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<HttpResponseMessage> CreateAsync(HikeLog hikeLog)
+        public async Task<JsonResult> CreateAsync(HikeLog hikeLog)
         {
+            var res = new ReturnObject { };
+
             if (ModelState.IsValid)
             {
                 using (HikeContext db = new HikeContext())
                 {
                     db.HikeLog.Add(hikeLog);
                     await db.SaveChangesAsync();
-                    return new HttpResponseMessage(HttpStatusCode.OK);
+                    res = new ReturnObject
+                    {
+                        success = true,
+                        message = "Hike log posted",
+                        data = new { }
+                    };
+                    return Json(res, JsonRequestBehavior.AllowGet);
                 }
             }
+
             HttpContext.Response.ContentType = "application/json; charset=utf-8";
-            return new HttpResponseMessage(HttpStatusCode.BadRequest); ;
+            res = new ReturnObject
+            {
+                success = false,
+                message = "Could not post hike log",
+                data = new { }
+            };
+
+            return Json(res, JsonRequestBehavior.AllowGet);
         }
 
         [HttpPost]
-        public async Task<HttpResponseMessage> ChangeDifficultyAsync(int? id, Hike hike)
+        public async Task<JsonResult> ChangeDifficultyAsync(int? id, Hike hike)
         {
             using (HikeContext db = new HikeContext())
             {
@@ -308,7 +340,14 @@ namespace What_The_Hike
                     data.Difficulty = hike.Difficulty;
                     await db.SaveChangesAsync();
                 }
-                return new HttpResponseMessage(HttpStatusCode.OK) ;
+                var json = new ReturnObject
+                {
+                    success = true,
+                    message = "Changed difficulty",
+                    data = new { }
+                };
+
+                return  Json(json, JsonRequestBehavior.AllowGet);
             }
         }
 
