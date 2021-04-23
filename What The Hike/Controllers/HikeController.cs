@@ -310,7 +310,6 @@ namespace What_The_Hike
             List<User> Users;
             List<HikeLog> UsersHikeLogs;
 
-            //Dictionary<int, double> UserScore = new Dictionary<int, double>();
             List<UserHikeScore> scores = new List<UserHikeScore>();
 
             using (HikeContext db = new HikeContext())
@@ -345,13 +344,10 @@ namespace What_The_Hike
                             LastName = u.surname,
                             TotalHikingDistance = sum }
                         );
-                   // UserScore.Add(u.userID, sum);
+
                 }
 
-                /*var items = from pair in UserScore
-                            orderby pair.Value descending,
-                                    pair.Key
-                            select pair;*/
+
                 var Leaderboard = scores
                     .OrderByDescending(s => s.TotalHikingDistance);
 
