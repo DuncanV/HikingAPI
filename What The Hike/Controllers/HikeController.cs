@@ -1,9 +1,20 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
+using System.Web;
+//using System.Web.Http;
+using System.Web.Http.Results;
 using System.Web.Mvc;
+using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.Extensions.Logging;
+using System.Web.Script.Serialization;
+using System.Xml;
+using Formatting = Newtonsoft.Json.Formatting;
 
 namespace What_The_Hike
 {
@@ -200,35 +211,36 @@ namespace What_The_Hike
         //Get: Hike/logs 
         //Check reply -> make json and create view model.
         [HttpGet]
-        public JsonResult GetAllHikeLogs()
+        public async Task<JsonResult> GetAllHikeLogsAsync()
         {
-            List<HikeLog> hikeLogs;
+            List<string> hikes = new List<string>();
             using (HikeContext db = new HikeContext())
             {
-                hikeLogs = db.HikeLog.Where(e => e.hikeID == e.Hike.hikeID).ToList();
+                var hikeLogs = await db.HikeLog.Where(e => e.hikeID == e.Hike.hikeID).ToListAsync();
                 if (hikeLogs.Count > 0)
                 {
-                    foreach (var log in hikeLogs)
+                    foreach (var hike in hikeLogs)
                     {
-                        log.User = db.User.Find(log.userID);
-                        log.Hike = db.Hike.Find(log.hikeID);
+                        hikes.Add(hike.Hike.name + " @" + hike.Hike.Facility.name);
+                        hikes.Add(hike.User.name + " " + hike.User.surname);
                     }
-                    return Json("{\"Success\": True, \"message\": \"Hike Logs returned\"}" + hikeLogs, JsonRequestBehavior.AllowGet);
-                }
 
-                return Json("{\"Success\": false, \"message\": \"No Hike Log with the given ID\"}", JsonRequestBehavior.AllowGet);
+                    var json = JsonConvert.SerializeObject(hikes, Formatting.Indented);
+                    HttpContext.Response.StatusCode = 200;
+                    return Json(json);
+                }
+                return Json(HttpStatusCode.BadRequest);
             }
         }
         //Get: Hike/logs/{id}
         // As above
         [HttpGet]
-        public IEnumerable<string> GetLogDetails(int? id)
+        public async Task<JsonResult> GetLogDetailsAsync(int? id)
         {
-            HikeLog hikeLogs;
             List<string> details = new List<string>();
             using (HikeContext db = new HikeContext())
             {
-                hikeLogs = db.HikeLog.SingleOrDefault(e => e.hikeLogID == id);
+                var hikeLogs = await db.HikeLog.SingleOrDefaultAsync(e => e.hikeLogID == id);
                 if (hikeLogs != null)
                 {
                     details.Add(hikeLogs.Hike.name);
@@ -240,16 +252,16 @@ namespace What_The_Hike
                 }
                 HttpContext.Response.StatusCode = 200;
                 HttpContext.Response.ContentType = "application/json; charset=utf-8";
-                return details;
+                var json = JsonConvert.SerializeObject(details, Formatting.Indented);
+                return Json(json);
             }
-
-            //return "{\"method\":GetLogDetails,\"results\":Failed}";
+            
         }
 
         //POST: Hike/logs
         [HttpPost]
-        //[ValidateAntiForgeryToken]
-        public string Create(HikeLog_UserHikeID hikeLog)
+        [ValidateAntiForgeryToken]
+        public async Task<HttpResponseMessage> CreateAsync(HikeLog_UserHikeID hikeLog)
         {
             if (ModelState.IsValid)
             {
@@ -257,28 +269,27 @@ namespace What_The_Hike
                 using (HikeContext db = new HikeContext())
                 {
                     db.HikeLog.Add(new HikeLog() {hikeID = Int32.Parse(hikeLog.hikeID), userID = Int32.Parse(hikeLog.userID)});
-                    db.SaveChanges();
-                    return "{\"method\": Create New Log, \"result\": Difficulty changed}";
+                    await db.SaveChangesAsync();
+                    return new HttpResponseMessage(HttpStatusCode.OK);
+
                 }
             }
-            HttpContext.Response.StatusCode = 200;
             HttpContext.Response.ContentType = "application/json; charset=utf-8";
-            return "{\"method\": Create New Log, \"result\": Failed}"; ;
+            return new HttpResponseMessage(HttpStatusCode.BadRequest); ;
         }
 
         [HttpPost]
-        public string ChangeDifficulty(int? id, Hike hike)
+        public async Task<HttpResponseMessage> ChangeDifficultyAsync(int? id, Hike hike)
         {
             using (HikeContext db = new HikeContext())
             {
-                var data = db.Hike.SingleOrDefault(x => x.hikeID == id);
+                var data = await db.Hike.SingleOrDefaultAsync(x => x.hikeID == id);
                 if (data != null)
                 {
                     data.Difficulty = hike.Difficulty;
-                    db.SaveChanges();
+                    await db.SaveChangesAsync();
                 }
-
-                return "";
+                return new HttpResponseMessage(HttpStatusCode.OK) ;
             }
         }
 
