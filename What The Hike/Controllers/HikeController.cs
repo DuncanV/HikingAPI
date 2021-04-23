@@ -305,12 +305,13 @@ namespace What_The_Hike
          * GET: Hike/LeaderBoard/
          */
         [HttpGet]
-        public string LeaderBoard()
+        public JsonResult LeaderBoard()
         {
             List<User> Users;
             List<HikeLog> UsersHikeLogs;
 
-            Dictionary<int, double> UserScore = new Dictionary<int, double>();
+            //Dictionary<int, double> UserScore = new Dictionary<int, double>();
+            List<UserHikeScore> scores = new List<UserHikeScore>();
 
             using (HikeContext db = new HikeContext())
             {
@@ -337,17 +338,32 @@ namespace What_The_Hike
                         sum += hike.distance;
                     }
 
-                    UserScore.Add(u.userID, sum);
+                    scores.Add(
+                        new UserHikeScore { 
+                            User = u.userID, 
+                            FirstName = u.name,
+                            LastName = u.surname,
+                            TotalHikingDistance = sum }
+                        );
+                   // UserScore.Add(u.userID, sum);
                 }
 
-                var items = from pair in UserScore
+                /*var items = from pair in UserScore
                             orderby pair.Value descending,
                                     pair.Key
-                            select pair;
+                            select pair;*/
+                var Leaderboard = scores
+                    .OrderByDescending(s => s.TotalHikingDistance);
 
-                var json = JsonConvert.SerializeObject(items, Formatting.Indented);
+                var json = new ReturnObject
+                {
+                    success = true,
+                    message = "Leaderboard retrieved",
+                    data = Leaderboard
+                };
 
-                return json;
+
+                return Json(json, JsonRequestBehavior.AllowGet);
 
             }
         }

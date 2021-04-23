@@ -135,4 +135,15 @@ namespace What_The_Hike
 
 
     }
+
+    public class UserHikeScore
+    {
+        public int User { get; set; }
+        
+        public string FirstName { get; set; }
+
+        public string LastName { get; set; }
+
+        public double TotalHikingDistance { get; set; }
+    }
 }
