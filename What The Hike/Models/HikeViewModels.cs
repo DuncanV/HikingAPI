@@ -16,6 +16,15 @@ namespace What_The_Hike
 
     }
 
+    public class HikeLog_UserHikeID
+    {
+        public List<User> User{ get; set; }
+
+        public List<Hike> Hike{ get; set; }
+        public string userID { get; set; }
+        public string hikeID { get; set; }
+    }
+
     public class HikeSimpleView
     {
         public int hikeID { get; set; }

@@ -248,14 +248,15 @@ namespace What_The_Hike
 
         //POST: Hike/logs
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public string Create(HikeLog hikeLog)
+        //[ValidateAntiForgeryToken]
+        public string Create(HikeLog_UserHikeID hikeLog)
         {
             if (ModelState.IsValid)
             {
+                //hikeLog.User;
                 using (HikeContext db = new HikeContext())
                 {
-                    db.HikeLog.Add(hikeLog);
+                    db.HikeLog.Add(new HikeLog() {hikeID = Int32.Parse(hikeLog.hikeID), userID = Int32.Parse(hikeLog.userID)});
                     db.SaveChanges();
                     return "{\"method\": Create New Log, \"result\": Difficulty changed}";
                 }
