@@ -311,6 +311,7 @@ namespace What_The_Hike
             List<HikeLog> UsersHikeLogs;
 
             List<UserHikeScore> scores = new List<UserHikeScore>();
+            var json = new ReturnObject { };
 
             using (HikeContext db = new HikeContext())
             {
@@ -319,6 +320,17 @@ namespace What_The_Hike
 
                 UsersHikeLogs = db.HikeLog
                     .ToList();
+
+                if (Users == null)
+                {
+                    json = new ReturnObject
+                    {
+                        success = false,
+                        message = "No registered users",
+                        data = new { }
+                    };
+                    return Json(json, JsonRequestBehavior.AllowGet);
+                }
 
                 foreach (User u in Users)
                 {
@@ -351,7 +363,7 @@ namespace What_The_Hike
                 var Leaderboard = scores
                     .OrderByDescending(s => s.TotalHikingDistance);
 
-                var json = new ReturnObject
+                json = new ReturnObject
                 {
                     success = true,
                     message = "Leaderboard retrieved",
