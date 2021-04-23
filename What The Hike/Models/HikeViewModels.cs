@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -8,21 +8,19 @@ using System.Runtime.Serialization;
 
 namespace What_The_Hike
 {
+    public class ReturnObject
+    {
+        public bool success { get; set; }
+        public String message { get; set; }
+        public Object data { get; set; }
+    }
+
     public class PointOfInterestView
     {
         public int poiID { get; set; }
 
         public String PointOfInterestDescription { get; set; }
 
-    }
-
-    public class HikeLog_UserHikeID
-    {
-        public List<User> User{ get; set; }
-
-        public List<Hike> Hike{ get; set; }
-        public string userID { get; set; }
-        public string hikeID { get; set; }
     }
 
     public class HikeSimpleView
@@ -136,5 +134,38 @@ namespace What_The_Hike
         public string SundayOpHours { get; set; }
 
 
+    }
+
+    public class UserHikeScore
+    {
+        public int User { get; set; }
+        
+        public string FirstName { get; set; }
+
+        public string LastName { get; set; }
+
+        public double TotalHikingDistance { get; set; }
+    }
+
+    public class HikeFromLog
+    {
+        public string name { get; set; }
+
+        public string description { get; set; }
+
+        public string difficulty { get; set; }
+
+        public string distance { get; set; }
+
+        public string facility { get; set; }
+
+        public string duration { get; set; }
+    }
+
+    public class UserHikeLog
+    {
+        public User user { get; set; }
+
+        public HikeLog hikeLog { get; set; }
     }
 }
