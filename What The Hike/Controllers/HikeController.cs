@@ -57,12 +57,22 @@ namespace What_The_Hike
             this.HttpContext.Response.ContentType = "application/json; charset=utf-8";
             if (hikes.Count > 0)
             {
-                return Json(hikes.OrderBy(e => e.hikeID).ToList(), JsonRequestBehavior.AllowGet);
+                var Ret = new ReturnObject
+                {
+                    success = true,
+                    message = "Hikes Retrieved",
+                    data = Json(hikes.OrderBy(e => e.hikeID).ToList())
+                };
+                return Json(Ret, JsonRequestBehavior.AllowGet);
             }
             else
             {
-                string Ret = string.Empty;
-                Ret = "{\"Success\": false, \"message\": \"No Hikes available\"}";
+                var Ret = new ReturnObject
+                {
+                    success = false,
+                    message = "No Hikes Available",
+                    data = new { }
+                };
                 return Json(Ret, JsonRequestBehavior.AllowGet);
             }
         }
