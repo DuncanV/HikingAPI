@@ -7,6 +7,18 @@ namespace What_The_Hike
 {
     public class HomeController : Controller
     {
+
+        public ActionResult ViewHikeLog()
+        {
+            HikeLog_UserHikeID logs = new HikeLog_UserHikeID() { User = new List<User>(), Hike = new List<Hike>() };
+            using (HikeContext db = new HikeContext())
+            {
+                logs.User.AddRange(from x in db.User select x);
+                logs.Hike.AddRange(from x in db.Hike select x);
+            }
+
+            return View(logs);
+        }
         //! Stuart To Fix
         //[HttpPost]
         //public JsonResult GetAllHikesLogged()

@@ -261,15 +261,17 @@ namespace What_The_Hike
         //POST: Hike/logs
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<HttpResponseMessage> CreateAsync(HikeLog hikeLog)
+        public async Task<HttpResponseMessage> CreateAsync(HikeLog_UserHikeID hikeLog)
         {
             if (ModelState.IsValid)
             {
+                //hikeLog.User;
                 using (HikeContext db = new HikeContext())
                 {
-                    db.HikeLog.Add(hikeLog);
+                    db.HikeLog.Add(new HikeLog() {hikeID = Int32.Parse(hikeLog.hikeID), userID = Int32.Parse(hikeLog.userID)});
                     await db.SaveChangesAsync();
                     return new HttpResponseMessage(HttpStatusCode.OK);
+
                 }
             }
             HttpContext.Response.ContentType = "application/json; charset=utf-8";
