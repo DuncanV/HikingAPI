@@ -14,7 +14,6 @@ namespace What_The_Hike
         public String message { get; set; }
         public Object data { get; set; }
     }
-
     public class PointOfInterestView
     {
         public int poiID { get; set; }

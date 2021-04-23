@@ -14,7 +14,9 @@ using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Logging;
 using System.Web.Script.Serialization;
 using System.Xml;
+using Newtonsoft.Json.Linq;
 using Formatting = Newtonsoft.Json.Formatting;
+using System.Text.RegularExpressions;
 
 namespace What_The_Hike
 {
@@ -54,14 +56,14 @@ namespace What_The_Hike
                 }
             }
             this.HttpContext.Response.StatusCode = 200;
-            this.HttpContext.Response.ContentType = "application/json; charset=utf-8";
+          
             if (hikes.Count > 0)
             {
                 var Ret = new ReturnObject
                 {
                     success = true,
                     message = "Hikes Retrieved",
-                    data = Json(hikes.OrderBy(e => e.hikeID).ToList())
+                    data = Json(hikes.OrderBy(e => e.hikeID).ToList()).Data
                 };
                 return Json(Ret, JsonRequestBehavior.AllowGet);
             }
@@ -122,15 +124,24 @@ namespace What_The_Hike
                 }
             }
             this.HttpContext.Response.StatusCode = 200;
-            this.HttpContext.Response.ContentType = "application/json; charset=utf-8";
             if (hike != null)
             {
-                return Json(hike, JsonRequestBehavior.AllowGet);
+                var Ret = new ReturnObject
+                {
+                    success = true,
+                    message = "Hike Retrieved",
+                    data = Json(hike).Data
+                };
+                return Json(Ret, JsonRequestBehavior.AllowGet);
             }
             else
             {
-                string Ret = string.Empty;
-                Ret = "{\"Success\": false, \"message\": \"Invalid Hike ID\"}";
+                var Ret = new ReturnObject
+                {
+                    success = false,
+                    message = "No Hike available with corresponding ID",
+                    data = new { }
+                };
                 return Json(Ret, JsonRequestBehavior.AllowGet);
             }
         }
@@ -164,10 +175,11 @@ namespace What_The_Hike
             return hikes;
         }
 
-        // GET: Hike/weather/{id}
+        // GET: Hike/Weather/{id}
         [HttpGet]
         public String Weather(int id)
         {
+            var Ret = new ReturnObject();
             Hike hike = null;
             Facility facility = null;
             using (HikeContext db = new HikeContext())
@@ -178,7 +190,7 @@ namespace What_The_Hike
                     facility = db.Facility.Where(e => e.facilityID == hike.facilityID).FirstOrDefault();
                 }
             }
-            string Ret = string.Empty;
+            
 
             if (facility != null)
             {
@@ -192,30 +204,37 @@ namespace What_The_Hike
                 HttpResponseMessage response = client.GetAsync(endpoint).Result;
                 if (response.IsSuccessStatusCode)
                 {
-                    Ret = response.Content.ReadAsStringAsync().Result;
+                    var Response = response.Content.ReadAsAsync<Object>().Result;
+                    Ret.success = true;
+                    Ret.message = "Weather Retrieved";
+                    Ret.data = Response;
                 }
                 else
                 {
                     Console.WriteLine("{0} ({1})", (int)response.StatusCode, response.ReasonPhrase);
-                    Ret = "{\"Success\": false, \"message\": \"WeatherApi call failed\"}";
+                    Ret.success = false;
+                    Ret.message = "Weather API failed";
+                    Ret.data = new { };
+                    
                 }
             }
             else
             {
+                Ret.success = false;
+                Ret.data = new { };
                 if (hike == null)
                 {
-                    Ret = "{\"Success\": false, \"message\": \"No Hike with the given ID\"}";
+                    Ret.message = "No Hike with the given ID";
                 }
                 else
                 {
-                    Ret = "{\"Success\": false, \"message\": \"No Facility linked to given Hike\"}";
+                    Ret.message = "No Facility linked to given Hike, unable to get coordinates";
                 }
             }
 
             this.HttpContext.Response.StatusCode = 200;
             this.HttpContext.Response.ContentType = "application/json; charset=utf-8";
-            return Ret;
-            //return Json(Ret, JsonRequestBehavior.AllowGet);
+            return JsonConvert.SerializeObject(Ret);
         }
 
         //Get: Hike/logs 
