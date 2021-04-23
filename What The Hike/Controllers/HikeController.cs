@@ -234,10 +234,15 @@ namespace What_The_Hike
                         hikes.Add(hike.Hike.name + " @" + hike.Hike.Facility.name);
                         hikes.Add(hike.User.name + " " + hike.User.surname);
                     }
-
-                    var json = JsonConvert.SerializeObject(hikes, Formatting.Indented);
+                    var json = new ReturnObject
+                    {
+                        success = true,
+                        message = "Hike logs retrieved",
+                        data = hikes
+                    };
+                    //var json = JsonConvert.SerializeObject(hikes, Formatting.Indented);
                     HttpContext.Response.StatusCode = 200;
-                    return Json(json);
+                    return Json(json, JsonRequestBehavior.AllowGet);
                 }
                 return Json(HttpStatusCode.BadRequest);
             }
@@ -248,6 +253,7 @@ namespace What_The_Hike
         public async Task<JsonResult> GetLogDetailsAsync(int? id)
         {
             List<string> details = new List<string>();
+             
             using (HikeContext db = new HikeContext())
             {
                 var hikeLogs = await db.HikeLog.SingleOrDefaultAsync(e => e.hikeLogID == id);
@@ -260,10 +266,15 @@ namespace What_The_Hike
                     details.Add(hikeLogs.Hike.Facility.name);
                     details.Add(hikeLogs.Hike.Duration.time.ToString());
                 }
-                HttpContext.Response.StatusCode = 200;
-                HttpContext.Response.ContentType = "application/json; charset=utf-8";
-                var json = JsonConvert.SerializeObject(details, Formatting.Indented);
-                return Json(json);
+
+                var json = new ReturnObject
+                {
+                    success = true,
+                    message = "Hike Log retrieved",
+                    data = details
+                };
+
+                return Json(json, JsonRequestBehavior.AllowGet);
             }
             
         }
