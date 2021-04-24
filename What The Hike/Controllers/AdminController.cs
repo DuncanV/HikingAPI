@@ -8,10 +8,10 @@ namespace What_The_Hike
     public class AdminController : Controller
     {
         // GET: Admin
-        public ActionResult Index()
-        {
-            return View();
-        }
+        // public ActionResult Index()
+        // {
+        //     return View();
+        // }
 
         // GET: /Admin/GetLocation/{id}
         [HttpGet]
