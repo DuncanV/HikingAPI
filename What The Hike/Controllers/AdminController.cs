@@ -13,6 +13,28 @@ namespace What_The_Hike
             return View();
         }
 
+        //GET: Admin/Facility/{id}
+        public ActionResult Facility(int? id)
+        {
+            var facility = new Facility { };
+            using (HikeContext db = new HikeContext())
+            {
+                if (!id.HasValue)
+                {
+                    return null;
+                }
+
+                facility = db.Facility.FirstOrDefault(f => f.facilityID == id.Value);
+
+                if (facility == null)
+                {
+                    return null;
+                }
+            }
+            
+            return View(facility);
+        }
+
         // GET: /Admin/GetLocation/{id}
         [HttpGet]
         public JsonResult GetLocation(int id)
