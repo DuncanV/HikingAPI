@@ -27,9 +27,9 @@
             @{
                 foreach (var item in Model.User)
                 {
-                        <option value="@Html.DisplayFor(modelItem =>item.userID)">
-                            @Html.DisplayFor(modelItem => item.name) @Html.DisplayFor(modelItem => item.surname)
-                        </option>
+                    <option value="@Html.DisplayFor(modelItem =>item.userID)">
+                        @Html.DisplayFor(modelItem => item.name) @Html.DisplayFor(modelItem => item.surname)
+                    </option>
                 }
             }
         </select>
