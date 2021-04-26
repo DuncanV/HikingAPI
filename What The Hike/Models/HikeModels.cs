@@ -7,6 +7,11 @@ using System.ComponentModel.DataAnnotations;
 using System.Runtime.Serialization;
 /**Contains classes that can be used for serializing and deserializing objects. Serialization is the process of converting an object or a graph of objects into a linear sequence of bytes for either storage or transmission to another location. Deserialization is the process of taking in stored information and recreating objects from it.*/
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNet.Identity.EntityFramework;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Microsoft.AspNet.Identity;
+using What_The_Hike.Models;
 
 namespace What_The_Hike
 {
@@ -291,5 +296,12 @@ namespace What_The_Hike
         [DataMember]
         [MaxLength(32)]
         public String surname { get; set; }
+    }
+
+    public class AppRole : IdentityRole
+    {
+        public AppRole() : base() { }
+        public AppRole(string name) : base(name) { }
+        
     }
 }
