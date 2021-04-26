@@ -1,13 +1,33 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using System.Web.Mvc;
-using System.Data;
+using What_The_Hike.Models;
 
-namespace What_The_Hike
+namespace What_The_Hike.Controllers
 {
     public class HomeController : Controller
     {
+        public ActionResult Index()
+        {
+            return View();
+        }
 
+        public ActionResult About()
+        {
+            ViewBag.Message = "Your application description page.";
+
+            return View();
+        }
+
+        public ActionResult Contact()
+        {
+            ViewBag.Message = "Your contact page.";
+
+            return View();
+        }
+        [HttpGet]
         public ActionResult ViewHikeLog()
         {
             HikeLog_UserHikeID logs = new HikeLog_UserHikeID() { User = new List<User>(), Hike = new List<Hike>() };
@@ -22,7 +42,7 @@ namespace What_The_Hike
         //! Stuart To Fix
         //[HttpPost]
         //public JsonResult GetAllHikesLogged()
-        //{
+        //{EntityFramework\Add-Migration
         //    List<HikeLog> hikeLog;
         //    using (HikeContext db = new HikeContext())
         //    {

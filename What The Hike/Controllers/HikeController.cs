@@ -1,4 +1,5 @@
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -7,18 +8,11 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
-//using System.Web.Http;
-using System.Web.Http.Results;
 using System.Web.Mvc;
-using Microsoft.EntityFrameworkCore.Internal;
-using Microsoft.Extensions.Logging;
-using System.Web.Script.Serialization;
-using System.Xml;
-using Newtonsoft.Json.Linq;
-using Formatting = Newtonsoft.Json.Formatting;
-using System.Text.RegularExpressions;
+using System.Web.UI.WebControls;
+using What_The_Hike.Models;
 
-namespace What_The_Hike
+namespace What_The_Hike.Controllers
 {
     public class HikeController : Controller
     {
@@ -56,7 +50,7 @@ namespace What_The_Hike
                 }
             }
             this.HttpContext.Response.StatusCode = 200;
-          
+
             if (hikes.Count > 0)
             {
                 var Ret = new ReturnObject
@@ -123,7 +117,6 @@ namespace What_The_Hike
                     };
                 }
             }
-            this.HttpContext.Response.StatusCode = 200;
             if (hike != null)
             {
                 var Ret = new ReturnObject
@@ -177,9 +170,9 @@ namespace What_The_Hike
 
         // GET: Hike/Weather/{id}
         [HttpGet]
-        public String Weather(int id)
+        public ContentResult Weather(int id)
         {
-            ReturnObject Ret = new ReturnObject();
+            JObject Ret = new JObject();
             Hike hike = null;
             Facility facility = null;
             using (HikeContext db = new HikeContext())
@@ -190,7 +183,7 @@ namespace What_The_Hike
                     facility = db.Facility.Where(e => e.facilityID == hike.facilityID).FirstOrDefault();
                 }
             }
-        
+
 
             if (facility != null)
             {
@@ -204,35 +197,33 @@ namespace What_The_Hike
                 HttpResponseMessage response = client.GetAsync(endpoint).Result;
                 if (response.IsSuccessStatusCode)
                 {
-                    Ret.success = true;
-                    Ret.message = "Weather retrieved";
-                    Ret.data = response.Content.ReadAsAsync<Object>().Result;
+                    Ret.Add("success", true);
+                    Ret.Add("message", "Weather retrieved");
+                    Ret.Add("data", JObject.Parse(response.Content.ReadAsStringAsync().Result.Replace("\\", string.Empty)));
                 }
                 else
                 {
                     Console.WriteLine("{0} ({1})", (int)response.StatusCode, response.ReasonPhrase);
-                    Ret.success = false;
-                    Ret.message = "Weather API call Failed";
-                    Ret.data = new { };
+                    Ret.Add("success", false);
+                    Ret.Add("message", "Weather API call Failed");
+                    Ret.Add("data", null);
                 }
             }
             else
             {
-                Ret.success = false;
-                Ret.data = new { };
+                Ret.Add("success", false);
+                Ret.Add("data", null);
                 if (hike == null)
                 {
-                    Ret.message = "No Hike with the given ID";
+                    Ret.Add("message", "No Hike with the given ID");
                 }
                 else
                 {
-                    Ret.message = "No Facility with the given HikeID";
+                    Ret.Add("message", "No Facility with the given HikeID");
                 }
             }
-
-            this.HttpContext.Response.StatusCode = 200;
-            this.HttpContext.Response.ContentType = "application/json; charset=utf-8";
-            return JsonConvert.SerializeObject(Ret);
+            
+            return Content(JsonConvert.SerializeObject(Ret), "application/json");
         }
 
         //Get: Hike/logs 
@@ -297,7 +288,8 @@ namespace What_The_Hike
                         message = "Hike retrieved",
                         data = hike
                     };
-                } else
+                }
+                else
                 {
                     json = new ReturnObject
                     {
@@ -309,7 +301,7 @@ namespace What_The_Hike
 
                 return Json(json, JsonRequestBehavior.AllowGet);
             }
-            
+
         }
 
         //POST: Hike/CreateAsync
@@ -365,7 +357,7 @@ namespace What_The_Hike
                     data = new { }
                 };
 
-                return  Json(json, JsonRequestBehavior.AllowGet);
+                return Json(json, JsonRequestBehavior.AllowGet);
             }
         }
 
@@ -375,7 +367,7 @@ namespace What_The_Hike
         [HttpGet]
         public JsonResult LeaderBoard()
         {
-            List<User> Users;
+            List<User> Users = new List<User>();
             List<HikeLog> UsersHikeLogs;
 
             List<UserHikeScore> scores = new List<UserHikeScore>();
@@ -383,8 +375,7 @@ namespace What_The_Hike
 
             using (HikeContext db = new HikeContext())
             {
-                Users = db.User
-                    .ToList();
+                Users.AddRange(db.User.ToList());
 
                 UsersHikeLogs = db.HikeLog
                     .ToList();
@@ -418,11 +409,13 @@ namespace What_The_Hike
                     }
 
                     scores.Add(
-                        new UserHikeScore { 
-                            User = u.userID, 
+                        new UserHikeScore
+                        {
+                            User = u.userID,
                             FirstName = u.name,
                             LastName = u.surname,
-                            TotalHikingDistance = sum }
+                            TotalHikingDistance = sum
+                        }
                         );
 
                 }

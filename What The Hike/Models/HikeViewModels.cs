@@ -5,6 +5,7 @@ using System.Web;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.Serialization;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace What_The_Hike
 {
@@ -27,6 +28,14 @@ namespace What_The_Hike
     {
         public int hikeID { get; set; }
         public String name { get; set; }
+    }
+
+    public class HikeLog_UserHikeID 
+    {
+        public List<User> User { get; set; }
+        public List<Hike> Hike { get; set; }
+        public String hikeID { get; set; }
+        public String userID { get; set; }
     }
 
     public class HikeGeneralView

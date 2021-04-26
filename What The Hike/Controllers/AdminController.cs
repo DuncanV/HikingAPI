@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using System.Web.Mvc;
+using What_The_Hike.Models;
 
-namespace What_The_Hike
+namespace What_The_Hike.Controllers
 {
     public class AdminController : Controller
     {
@@ -23,14 +25,14 @@ namespace What_The_Hike
             {
                 Facility TempFac = db.Facility
                     .Find(id);
-                
+
                 if (TempFac == null)
                 {
-                    var res = new ReturnObject 
-                    { 
-                        success = false, 
-                        message = "Facility does not exist", 
-                        data = new { } 
+                    var res = new ReturnObject
+                    {
+                        success = false,
+                        message = "Facility does not exist",
+                        data = new { }
                     };
                     return Json(res, JsonRequestBehavior.AllowGet);
                 }
@@ -55,9 +57,9 @@ namespace What_The_Hike
 
                 }
 
-                for(int i = 1; i <= 7; i++)
+                for (int i = 1; i <= 7; i++)
                 {
-                   if (!dict.ContainsKey(i.ToString()))
+                    if (!dict.ContainsKey(i.ToString()))
                     {
                         dict.Add(i.ToString(), "No information");
                     }
@@ -143,7 +145,7 @@ namespace What_The_Hike
                         message = "Could not add FacilityHoursLink because Operating Hours id does not exist",
                         data = new { }
                     };
-                    return Json(res, JsonRequestBehavior.AllowGet); 
+                    return Json(res, JsonRequestBehavior.AllowGet);
                 }
 
                 db.FacilityHoursLink.Add(FacilityHours);
@@ -304,11 +306,10 @@ namespace What_The_Hike
                         message = "Facility deleted",
                         data = new { }
                     };
-                    
+
                 }
                 return Json(res, JsonRequestBehavior.AllowGet);
             }
         }
-
     }
 }
