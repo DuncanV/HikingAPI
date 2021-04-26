@@ -1,0 +1,40 @@
+﻿@model What_The_Hike.HikeLog_UserHikeID
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>HikeLog_View</title>
+</head>
+<body>
+    @using (Html.BeginForm("Create", "Hike", FormMethod.Post))
+    {
+        <select name="hikeID">
+            @{
+                foreach (var item in Model.Hike)
+                {
+                    <option value="@Html.DisplayFor(modelItem =>item.hikeID)">
+                        @Html.DisplayFor(modelItem => item.name)
+                    </option>
+                }
+            }
+        </select>
+        <select name="userID">
+            @{
+                foreach (var item in Model.User)
+                {
+                    <option value="@Html.DisplayFor(modelItem =>item.userID)">
+                        @Html.DisplayFor(modelItem => item.name) @Html.DisplayFor(modelItem => item.surname)
+                    </option>
+                }
+            }
+        </select>
+        @Html.AntiForgeryToken()
+        <button type="submit">Submit</button>
+    }
+</body>
+</html>

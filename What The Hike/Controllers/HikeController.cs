@@ -1,4 +1,5 @@
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -7,16 +8,11 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
-//using System.Web.Http;
-using System.Web.Http.Results;
 using System.Web.Mvc;
-using Microsoft.EntityFrameworkCore.Internal;
-using Microsoft.Extensions.Logging;
-using System.Web.Script.Serialization;
-using System.Xml;
-using Formatting = Newtonsoft.Json.Formatting;
+using System.Web.UI.WebControls;
+using What_The_Hike.Models;
 
-namespace What_The_Hike
+namespace What_The_Hike.Controllers
 {
     public class HikeController : Controller
     {
@@ -54,15 +50,25 @@ namespace What_The_Hike
                 }
             }
             this.HttpContext.Response.StatusCode = 200;
-            this.HttpContext.Response.ContentType = "application/json; charset=utf-8";
+
             if (hikes.Count > 0)
             {
-                return Json(hikes.OrderBy(e => e.hikeID).ToList(), JsonRequestBehavior.AllowGet);
+                var Ret = new ReturnObject
+                {
+                    success = true,
+                    message = "Hikes Retrieved",
+                    data = Json(hikes.OrderBy(e => e.hikeID).ToList()).Data
+                };
+                return Json(Ret, JsonRequestBehavior.AllowGet);
             }
             else
             {
-                string Ret = string.Empty;
-                Ret = "{\"Success\": false, \"message\": \"No Hikes available\"}";
+                var Ret = new ReturnObject
+                {
+                    success = false,
+                    message = "No Hikes Available",
+                    data = new { }
+                };
                 return Json(Ret, JsonRequestBehavior.AllowGet);
             }
         }
@@ -111,16 +117,24 @@ namespace What_The_Hike
                     };
                 }
             }
-            this.HttpContext.Response.StatusCode = 200;
-            this.HttpContext.Response.ContentType = "application/json; charset=utf-8";
             if (hike != null)
             {
-                return Json(hike, JsonRequestBehavior.AllowGet);
+                var Ret = new ReturnObject
+                {
+                    success = true,
+                    message = "Hike Retrieved",
+                    data = hike
+                };
+                return Json(Ret, JsonRequestBehavior.AllowGet);
             }
             else
             {
-                string Ret = string.Empty;
-                Ret = "{\"Success\": false, \"message\": \"Invalid Hike ID\"}";
+                var Ret = new ReturnObject
+                {
+                    success = false,
+                    message = "No Hike with given ID",
+                    data = new { }
+                };
                 return Json(Ret, JsonRequestBehavior.AllowGet);
             }
         }
@@ -154,10 +168,11 @@ namespace What_The_Hike
             return hikes;
         }
 
-        // GET: Hike/weather/{id}
+        // GET: Hike/Weather/{id}
         [HttpGet]
-        public String Weather(int id)
+        public ContentResult Weather(int id)
         {
+            JObject Ret = new JObject();
             Hike hike = null;
             Facility facility = null;
             using (HikeContext db = new HikeContext())
@@ -168,7 +183,7 @@ namespace What_The_Hike
                     facility = db.Facility.Where(e => e.facilityID == hike.facilityID).FirstOrDefault();
                 }
             }
-            string Ret = string.Empty;
+
 
             if (facility != null)
             {
@@ -182,30 +197,33 @@ namespace What_The_Hike
                 HttpResponseMessage response = client.GetAsync(endpoint).Result;
                 if (response.IsSuccessStatusCode)
                 {
-                    Ret = response.Content.ReadAsStringAsync().Result;
+                    Ret.Add("success", true);
+                    Ret.Add("message", "Weather retrieved");
+                    Ret.Add("data", JObject.Parse(response.Content.ReadAsStringAsync().Result.Replace("\\", string.Empty)));
                 }
                 else
                 {
                     Console.WriteLine("{0} ({1})", (int)response.StatusCode, response.ReasonPhrase);
-                    Ret = "{\"Success\": false, \"message\": \"WeatherApi call failed\"}";
+                    Ret.Add("success", false);
+                    Ret.Add("message", "Weather API call Failed");
+                    Ret.Add("data", null);
                 }
             }
             else
             {
+                Ret.Add("success", false);
+                Ret.Add("data", null);
                 if (hike == null)
                 {
-                    Ret = "{\"Success\": false, \"message\": \"No Hike with the given ID\"}";
+                    Ret.Add("message", "No Hike with the given ID");
                 }
                 else
                 {
-                    Ret = "{\"Success\": false, \"message\": \"No Facility linked to given Hike\"}";
+                    Ret.Add("message", "No Facility with the given HikeID");
                 }
             }
-
-            this.HttpContext.Response.StatusCode = 200;
-            this.HttpContext.Response.ContentType = "application/json; charset=utf-8";
-            return Ret;
-            //return Json(Ret, JsonRequestBehavior.AllowGet);
+            
+            return Content(JsonConvert.SerializeObject(Ret), "application/json");
         }
 
         //Get: Hike/logs 
@@ -214,6 +232,7 @@ namespace What_The_Hike
         public async Task<JsonResult> GetAllHikeLogsAsync()
         {
             List<string> hikes = new List<string>();
+
             using (HikeContext db = new HikeContext())
             {
                 var hikeLogs = await db.HikeLog.Where(e => e.hikeID == e.Hike.hikeID).ToListAsync();
@@ -224,60 +243,104 @@ namespace What_The_Hike
                         hikes.Add(hike.Hike.name + " @" + hike.Hike.Facility.name);
                         hikes.Add(hike.User.name + " " + hike.User.surname);
                     }
-
-                    var json = JsonConvert.SerializeObject(hikes, Formatting.Indented);
+                    var json = new ReturnObject
+                    {
+                        success = true,
+                        message = "Hike logs retrieved",
+                        data = hikes
+                    };
+                    //var json = JsonConvert.SerializeObject(hikes, Formatting.Indented);
                     HttpContext.Response.StatusCode = 200;
-                    return Json(json);
+                    return Json(json, JsonRequestBehavior.AllowGet);
                 }
                 return Json(HttpStatusCode.BadRequest);
             }
         }
-        //Get: Hike/logs/{id}
+
+
+        //Get: Hike/GetLogDetailsAsync/{id}
         // As above
         [HttpGet]
         public async Task<JsonResult> GetLogDetailsAsync(int? id)
         {
             List<string> details = new List<string>();
+            HikeFromLog hike = null;
+            var json = new ReturnObject { };
+
             using (HikeContext db = new HikeContext())
             {
                 var hikeLogs = await db.HikeLog.SingleOrDefaultAsync(e => e.hikeLogID == id);
                 if (hikeLogs != null)
                 {
-                    details.Add(hikeLogs.Hike.name);
-                    details.Add(hikeLogs.Hike.description);
-                    details.Add(hikeLogs.Hike.Difficulty.description);
-                    details.Add(hikeLogs.Hike.distance.ToString());
-                    details.Add(hikeLogs.Hike.Facility.name);
-                    details.Add(hikeLogs.Hike.Duration.time.ToString());
+                    hike = new HikeFromLog
+                    {
+                        name = hikeLogs.Hike.name,
+                        description = hikeLogs.Hike.description,
+                        difficulty = hikeLogs.Hike.Difficulty.description,
+                        distance = hikeLogs.Hike.distance.ToString(),
+                        facility = hikeLogs.Hike.Facility.name,
+                        duration = hikeLogs.Hike.Duration.time.ToString()
+                    };
+
+                    json = new ReturnObject
+                    {
+                        success = true,
+                        message = "Hike retrieved",
+                        data = hike
+                    };
                 }
-                HttpContext.Response.StatusCode = 200;
-                HttpContext.Response.ContentType = "application/json; charset=utf-8";
-                var json = JsonConvert.SerializeObject(details, Formatting.Indented);
-                return Json(json);
+                else
+                {
+                    json = new ReturnObject
+                    {
+                        success = false,
+                        message = "Hike does not exist",
+                        data = hike
+                    };
+                }
+
+                return Json(json, JsonRequestBehavior.AllowGet);
             }
-            
+
         }
 
-        //POST: Hike/logs
+        //POST: Hike/CreateAsync
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<HttpResponseMessage> CreateAsync(HikeLog hikeLog)
+        public async Task<JsonResult> CreateAsync(HikeLog hikeLog)
         {
+            var res = new ReturnObject { };
+
             if (ModelState.IsValid)
             {
                 using (HikeContext db = new HikeContext())
                 {
                     db.HikeLog.Add(hikeLog);
                     await db.SaveChangesAsync();
-                    return new HttpResponseMessage(HttpStatusCode.OK);
+                    res = new ReturnObject
+                    {
+                        success = true,
+                        message = "Hike log posted",
+                        data = new { }
+                    };
+                    return Json(res, JsonRequestBehavior.AllowGet);
                 }
             }
+
             HttpContext.Response.ContentType = "application/json; charset=utf-8";
-            return new HttpResponseMessage(HttpStatusCode.BadRequest); ;
+            res = new ReturnObject
+            {
+                success = false,
+                message = "Could not post hike log",
+                data = new { }
+            };
+
+            return Json(res, JsonRequestBehavior.AllowGet);
         }
 
+        //POST: Hike/ChangeDifficultyAsync
         [HttpPost]
-        public async Task<HttpResponseMessage> ChangeDifficultyAsync(int? id, Hike hike)
+        public async Task<JsonResult> ChangeDifficultyAsync(int? id, Hike hike)
         {
             using (HikeContext db = new HikeContext())
             {
@@ -287,7 +350,14 @@ namespace What_The_Hike
                     data.Difficulty = hike.Difficulty;
                     await db.SaveChangesAsync();
                 }
-                return new HttpResponseMessage(HttpStatusCode.OK) ;
+                var json = new ReturnObject
+                {
+                    success = true,
+                    message = "Changed difficulty",
+                    data = new { }
+                };
+
+                return Json(json, JsonRequestBehavior.AllowGet);
             }
         }
 
@@ -295,20 +365,31 @@ namespace What_The_Hike
          * GET: Hike/LeaderBoard/
          */
         [HttpGet]
-        public string LeaderBoard()
+        public JsonResult LeaderBoard()
         {
-            List<User> Users;
+            List<User> Users = new List<User>();
             List<HikeLog> UsersHikeLogs;
 
-            Dictionary<int, double> UserScore = new Dictionary<int, double>();
+            List<UserHikeScore> scores = new List<UserHikeScore>();
+            var json = new ReturnObject { };
 
             using (HikeContext db = new HikeContext())
             {
-                Users = db.User
-                    .ToList();
+                Users.AddRange(db.User.ToList());
 
                 UsersHikeLogs = db.HikeLog
                     .ToList();
+
+                if (Users == null)
+                {
+                    json = new ReturnObject
+                    {
+                        success = false,
+                        message = "No registered users",
+                        data = new { }
+                    };
+                    return Json(json, JsonRequestBehavior.AllowGet);
+                }
 
                 foreach (User u in Users)
                 {
@@ -327,17 +408,31 @@ namespace What_The_Hike
                         sum += hike.distance;
                     }
 
-                    UserScore.Add(u.userID, sum);
+                    scores.Add(
+                        new UserHikeScore
+                        {
+                            User = u.userID,
+                            FirstName = u.name,
+                            LastName = u.surname,
+                            TotalHikingDistance = sum
+                        }
+                        );
+
                 }
 
-                var items = from pair in UserScore
-                            orderby pair.Value descending,
-                                    pair.Key
-                            select pair;
 
-                var json = JsonConvert.SerializeObject(items, Formatting.Indented);
+                var Leaderboard = scores
+                    .OrderByDescending(s => s.TotalHikingDistance);
 
-                return json;
+                json = new ReturnObject
+                {
+                    success = true,
+                    message = "Leaderboard retrieved",
+                    data = Leaderboard
+                };
+
+
+                return Json(json, JsonRequestBehavior.AllowGet);
 
             }
         }
