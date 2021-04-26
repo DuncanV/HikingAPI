@@ -1,0 +1,56 @@
+﻿@model What_The_Hike.Facility
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+    ViewBag.Title = "Facility";
+}
+
+
+<h2>@ViewData["Title"]</h2>
+<hr />
+<div>
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.name)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.name)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.latitude)
+        </dt>
+        <dd>
+            @Html.DisplayTextFor(model => model.latitude)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.longitude)
+        </dt>
+        <dd>
+            @Html.DisplayTextFor(model => model.longitude)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.pets)
+        </dt>
+        <dd>
+            @Html.DisplayTextFor(model => model.pets)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.parking)
+        </dt>
+        <dd>
+            @Html.DisplayTextFor(model => model.parking)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.bookingRequired)
+        </dt>
+        <dd>
+            @Html.DisplayTextFor(model => model.bookingRequired)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.facilityID">Edit</a>
+</div>
