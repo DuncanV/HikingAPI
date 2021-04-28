@@ -57,8 +57,7 @@ namespace What_The_Hike.Controllers.Tests
         {
             var results = AdminController.LoadLocation("Kaladiwele Mountains", (float)-25.9876, (float)18.3546, false, false, true);
             var json = JObject.Parse(JsonConvert.SerializeObject(results.Data));
-            string stringToTest = json["message"].Value<String>();
-            Assert.AreEqual("Facility already exists", stringToTest);
+            Assert.AreEqual("Facility already exists", json["message"].Value<String>());
             Assert.IsFalse(json["success"].Value<bool>());
         }
         /* End of Admin tests */
@@ -86,7 +85,16 @@ namespace What_The_Hike.Controllers.Tests
         {
             var results = HikeController.LeaderBoard();
             var json = JObject.Parse(JsonConvert.SerializeObject(results.Data));
-            //Assert.LessOrEqual(json[1]["Value"].Value<double>(), json[0]["Value"].Value<double>());
+            Assert.AreNotEqual(json["data"][1]["TotalHikingDistance"].Value<double>(), json["data"][0]["TotalHikingDistance"].Value<double>());
+        }
+
+        [TestMethod()]
+        public void CreateTest()
+        {
+            var results = HikeController.Create(new HikeLog_UserHikeID() { hikeID = "1", userID = "3" });
+            var json = JObject.Parse(results.Content);
+            Assert.AreEqual("Created New Log.", json["message"].Value<String>());
+            Assert.IsTrue(json["success"].Value<bool>());
         }
     }
 }

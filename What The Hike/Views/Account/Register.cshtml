@@ -30,19 +30,16 @@
         </div>
     </div>
     <div class="form-group row">
-        @Html.LabelFor(m => m.user.name, "First Name(s)", htmlAttributes: new { @class = "col-md-3 col-form-label bolded required" })
-        <div class="col-md-9">
+        @Html.LabelFor(m => m.user.name, "First Name(s)", htmlAttributes: new { @class = "col-md-2 control-label" })
+        <div class="col-md-10">
             @Html.EditorFor(m => m.user.name, new { htmlattributes = new { @class = "form-control" } })
-            @Html.ValidationMessageFor(m => m.user.name, "", new { @class = "text-danger" })
         </div>
     </div>
 
     <div class="form-group row">
-        @Html.LabelFor(m => m.user.surname, "Surname", htmlAttributes: new { @class = "col-md-3 col-form-label bolded required" })
-        <div class="col-md-9">
+        @Html.LabelFor(m => m.user.surname, "Surname", htmlAttributes: new { @class = "col-md-2 control-label" })
+        <div class="col-md-10">
             @Html.EditorFor(m => m.user.surname, new { htmlattributes = new { @class = "form-control", @name = "stakeholder.cSurname" } })
-            @Html.ValidationMessageFor(m => m.user.surname, "", new { @class = "text-danger" })
-
         </div>
     </div>
     <div class="form-group">

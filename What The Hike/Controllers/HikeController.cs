@@ -7,7 +7,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Mvc;
 using System.Web.UI.WebControls;
 using What_The_Hike.Models;
@@ -222,7 +221,33 @@ namespace What_The_Hike.Controllers
                     Ret.Add("message", "No Facility with the given HikeID");
                 }
             }
-            
+
+            return Content(JsonConvert.SerializeObject(Ret), "application/json");
+        }
+
+        //POST: Hike/logs
+        [HttpPost]
+        [Authorize]
+        //[ValidateAntiForgeryToken]
+        public ContentResult Create(HikeLog_UserHikeID hikeLog)
+        {
+            JObject Ret = new JObject();
+            if (ModelState.IsValid )
+            {
+                //hikeLog.User;
+                using (HikeContext db = new HikeContext())
+                {
+
+                    db.HikeLog.Add(new HikeLog() { hikeID = Int32.Parse(hikeLog.hikeID), userID = Int32.Parse(hikeLog.userID)
+                    });
+                    db.SaveChanges();
+                    Ret.Add("success", true);
+                    Ret.Add("message", "Created New Log.");
+                    return Content(JsonConvert.SerializeObject(Ret), "application/json");
+                }
+            }
+            Ret.Add("success", false);
+            Ret.Add("message", "Errors In Model.");
             return Content(JsonConvert.SerializeObject(Ret), "application/json");
         }
 
@@ -249,7 +274,6 @@ namespace What_The_Hike.Controllers
                         message = "Hike logs retrieved",
                         data = hikes
                     };
-                    //var json = JsonConvert.SerializeObject(hikes, Formatting.Indented);
                     HttpContext.Response.StatusCode = 200;
                     return Json(json, JsonRequestBehavior.AllowGet);
                 }
@@ -365,6 +389,7 @@ namespace What_The_Hike.Controllers
          * GET: Hike/LeaderBoard/
          */
         [HttpGet]
+        [Authorize]
         public JsonResult LeaderBoard()
         {
             List<User> Users = new List<User>();

@@ -1,40 +1,36 @@
 ﻿@model What_The_Hike.HikeLog_UserHikeID
+@{ Layout = "~/Views/Shared/_Layout.cshtml"; }
 
-@{
-    Layout = null;
-}
+@using (Html.BeginForm("Create", "Hike", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+{
+<h2>Log a new hike.</h2>
+                <hr />
+                                @Html.AntiForgeryToken()
+                                                @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+                                                                <div class="form-group">
+                                                                    <label for="hikeID" class="col-md-2 control-label">Select A Hike Location</label>
+                                                                    <div class="col-md-10">
+                                                                        <select name="hikeID" id="hikeID" class="form-control">
+                                                                            @{foreach (var item in Model.Hike)
+                                                                                {
+                                                                <option value="@item.hikeID">
+                                                                    @item.name
+                                                                </option> } }
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
 
-<!DOCTYPE html>
-<html>
-<head>
-    <meta name="viewport" content="width=device-width" />
-    <title>HikeLog_View</title>
-</head>
-<body>
-    @using (Html.BeginForm("Create", "Hike", FormMethod.Post))
-    {
-        <select name="hikeID">
-            @{
-                foreach (var item in Model.Hike)
-                {
-                    <option value="@Html.DisplayFor(modelItem =>item.hikeID)">
-                        @Html.DisplayFor(modelItem => item.name)
-                    </option>
-                }
-            }
-        </select>
-        <select name="userID">
-            @{
-                foreach (var item in Model.User)
-                {
-                    <option value="@Html.DisplayFor(modelItem =>item.userID)">
-                        @Html.DisplayFor(modelItem => item.name) @Html.DisplayFor(modelItem => item.surname)
-                    </option>
-                }
-            }
-        </select>
-        @Html.AntiForgeryToken()
-        <button type="submit">Submit</button>
-    }
-</body>
-</html>
+                                                                                <div class="form-group">
+                                                                                    <label for="userID" class="col-md-2 control-label">Select A User</label>
+                                                                                    <div class="col-md-10">
+                                                                                        <select name="userID" id="userID" class="form-control">
+
+                                                                                            @{ foreach (var item in Model.User)
+                                                                                                {
+                                                                                <option value="@item.userID">
+                                                                                    @item.name @item.surname
+                                                                                </option> } }
+                                                                                        </select>
+                                                                                    </div>
+                                                                                </div>
+                                                                                                <button class="btn btn-primary" type="submit">Submit</button>}

@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
 using What_The_Hike.Models;
 
@@ -13,6 +11,29 @@ namespace What_The_Hike.Controllers
         public ActionResult Index()
         {
             return View();
+        }
+
+        [HttpGet]
+        //GET: Admin/Facility/{id}
+        public ActionResult Facility(int? id)
+        {
+            var facility = new Facility { };
+            using (HikeContext db = new HikeContext())
+            {
+                if (!id.HasValue)
+                {
+                    return null;
+                }
+
+                facility = db.Facility.FirstOrDefault(f => f.facilityID == id.Value);
+
+                if (facility == null)
+                {
+                    return null;
+                }
+            }
+
+            return View(facility);
         }
 
         // GET: /Admin/GetLocation/{id}
@@ -96,6 +117,7 @@ namespace What_The_Hike.Controllers
 
         // POST: /Admin/LoadFacilityHours/
         [HttpPost]
+        [Authorize]
         public JsonResult LoadFacilityHours(int FacilityId, int OperatingHoursId)
         {
             FacilityHoursLink FacilityHours = new FacilityHoursLink { facilityID = FacilityId, operatingHoursID = OperatingHoursId };
@@ -163,6 +185,7 @@ namespace What_The_Hike.Controllers
 
         // POST: /Admin/LoadOperatingHours
         [HttpPost]
+        [Authorize]
         public JsonResult LoadOperatingHours(int TimeFrom, int TimeTo, int Day)
         {
             OperatingHours hours = new OperatingHours { time_from = TimeFrom, time_to = TimeTo, day = Day };
@@ -200,6 +223,7 @@ namespace What_The_Hike.Controllers
 
         // POST: /Admin/LoadLocation
         [HttpPost]
+        [Authorize]
         public JsonResult LoadLocation(string Name, float Longitude, float Latitude, bool Parking, bool Pets, bool BookingRequired)
         {
             Facility Fac = new Facility { name = Name, longitude = Longitude, latitude = Latitude, parking = Parking, pets = Pets, bookingRequired = BookingRequired };
@@ -208,7 +232,7 @@ namespace What_The_Hike.Controllers
             using (HikeContext db = new HikeContext())
             {
                 var TempFacility = db.Facility
-                    .Where(f => (f.name.CompareTo(Name) == 0) /*&& (f.longitude.Equals(Longitude)) && (f.latitude == Latitude) && (f.parking == Parking) && (f.pets == Pets) && (f.bookingRequired == BookingRequired)*/)
+                    .Where(f => (f.name.CompareTo(Name) == 0))
                     .FirstOrDefault();
 
                 if (TempFacility != null)
@@ -237,6 +261,7 @@ namespace What_The_Hike.Controllers
 
         // PATCH: /Admin/UpdateLocation/{id}
         [HttpPatch]
+        [Authorize]
         public JsonResult UpdateLocation(int id, string Name, float Longitude, float Latitude, bool Parking, bool Pets, bool BookingRequired)
         {
 
@@ -280,6 +305,7 @@ namespace What_The_Hike.Controllers
 
         // DELETE: /Admin/RemoveLocation/{id}
         [HttpDelete]
+        [Authorize]
         public JsonResult RemoveLocation(int id)
         {
             var res = new ReturnObject { };
